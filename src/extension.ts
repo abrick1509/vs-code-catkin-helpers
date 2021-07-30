@@ -82,7 +82,8 @@ export function activate(context: vscode.ExtensionContext) {
 	let run_tests_command = vscode.commands.registerCommand('catkin-helpers.run_tests', () => {
 		const packagename = getPackagePathOfFilename();
 		if (packagename.length !== 0) {
-			const command = "source $(catkin locate -d)/setup.zsh && make test -C $(catkin locate -b " + packagename + ")";
+			const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shellType')
+			const command = "source $(catkin locate -d)/setup." + shelltype + " && make test -C $(catkin locate -b " + packagename + ")";
 			runCommandForFile(command);
 		}
 	});

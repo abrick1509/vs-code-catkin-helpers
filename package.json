@@ -65,7 +65,21 @@
 				"key": "",
 				"when": "editorTextFocus"
 			}
-		]
+		],
+		"configuration": {
+			"title": "Catkin Helpers",
+			"properties": {
+				"catkin-helpers.shellType": {
+					"type": "string",
+					"default": "zsh",
+					"enum": [
+						"zsh",
+						"bash"
+					],
+					"description": "Default shell for test execution."
+				}
+			}
+		}
 	},
 	"repository": "https://github.com/abrick1509/vs-code-catkin-helpers.git",
 	"scripts": {
