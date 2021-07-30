@@ -20,9 +20,9 @@ Provides some helper functions to work with catkin projects.
 | `Catkin Helpers: Make tests of current package`                  | See 4. from above | `undefined`   |
 | `Catkin Helpers: Run tests of current package`                   | See 5. from above | `undefined`   |
  ## Options
- | Name                                                             | Description       | Default Value |
-| ---------------------------------------------------------------- | ----------------- | ------------- |
-| `catkin-helpers.shellType`                   | Shell type used for test execution.    | `zsh`
+ | Name                       | Description                         | Default Value |
+ | -------------------------- | ----------------------------------- | ------------- |
+ | `catkin-helpers.shellType` | Shell type used for test execution. | `zsh`         |
 
 ## Known Issues
 Nothing known so far. 
