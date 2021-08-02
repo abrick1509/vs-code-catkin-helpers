@@ -37,6 +37,11 @@
 				"command": "catkin-helpers.run_tests",
 				"title": "Catkin Helpers: Run tests of current package",
 				"enablement": "editorLangId == cpp"
+			},
+			{
+				"command": "catkin-helpers.run_tests_in_file",
+				"title": "Catkin Helpers: Run tests in current file",
+				"enablement": "editorLangId == cpp"
 			}
 		],
 		"keybindings": [
@@ -62,6 +67,11 @@
 			},
 			{
 				"command": "catkin-helpers.run_tests",
+				"key": "",
+				"when": "editorTextFocus"
+			},
+			{
+				"command": "catkin-helpers.run_tests_in_file",
 				"key": "",
 				"when": "editorTextFocus"
 			}

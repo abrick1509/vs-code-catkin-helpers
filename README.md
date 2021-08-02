@@ -7,7 +7,7 @@ Provides some helper functions to work with catkin projects.
 3. Directly call make for the current file's package (requires initial `catkin build` of the package).
 4. Build tests for current package.
 5. Run all tests for current package (currently only works for `zsh`).
-6. TODO: Run all tests of current file (in case this includes tests).
+6. Run all tests of current file (in case it includes tests).
 7. TODO: Run test under cursor in current file.
 8. TODO: Scan and visualize results of last test run.  
 
