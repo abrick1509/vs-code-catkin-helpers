@@ -16,7 +16,7 @@ function getPackagePathOfFilename() {
 		const index = Math.max(src_index, header_index, test_index);
 		if (index === -1) {
 			console.log("Could not find (src|include) in filename.");
-			vscode.window.showErrorMessage("Could not deduce package name from in full filename: " + filename);
+			vscode.window.showErrorMessage("Could not deduce package name from full filename: " + filename);
 			return packagename;
 		}
 		packagename = name_splitters[index - 1];
@@ -47,6 +47,29 @@ function checkIfFileHoldsTests() {
 		}
 	}
 	return has_tests;
+}
+
+function getTestAtCursorPosition() {
+	const editor = vscode.window.activeTextEditor;
+	if (editor) {
+		// search for the latest match on TEST[_FP] from the start of document until the current cursor position
+		const cursor_position = editor.selection.active;
+		const document = editor.document;
+		const text = document.getText(new vscode.Range(new vscode.Position(0, 0), cursor_position));
+		const test_matches = text.match(/TEST(_F|_P)*\(\w*,\s*\w*\)/g);
+		// this should have been checked before, anyways make sure we don't segfault here
+		if (!test_matches) {
+			return "";
+		}
+		else {
+			// we should be able to match against the test name here, files w/o tests should have been caught before
+			// the latest test should be closest to the cursor position
+			const matched_test_names = test_matches[test_matches.length - 1].match(/TEST[_FP]*\((\w*),\s*(\w*)\)/);
+			const full_test_name = matched_test_names[1] + "." + matched_test_names[2];
+			return full_test_name;
+		}
+	}
+	return "";
 }
 
 function getTerminal() {
@@ -124,10 +147,12 @@ export function activate(context: vscode.ExtensionContext) {
 			// grep file for TEST, if yes 
 			// search for compiled test executable and start shell process in current terminal 
 			if (checkIfFileHoldsTests()) {
-				const basename_no_ext = basename.split('.')[0]
-				const command = "source $(catkin locate -d)/setup." + shelltype + // source stuff
-					" && test_to_run=$(find $(catkin locate -b)/" + packagename + "/devel/lib/" + packagename + " -type f -executable -iname \"*" + basename_no_ext + "*\") " + // find the executable that contains the filename
-					"&& if [[ -z $test_to_run ]]; then echo \"No test found containing " + basename_no_ext + ". Consider building your tests again.\"; else $test_to_run;fi";; // run exe if found
+				const basename_no_ext = basename.split('.')[0];
+				const command = "source $(catkin locate -d)/setup." + shelltype + 							// source stuff
+					" && test_to_run=$(find $(catkin locate -b)/" + packagename + "/devel/lib/" + packagename +
+					" -type f -executable -iname \"*" + basename_no_ext + "*\") " + 						// find the executable that contains the filename
+					"&& if [[ -z $test_to_run ]]; then echo \"No test found containing " + basename_no_ext +
+					". Consider building your tests again.\"; else $test_to_run;fi";; 						// run exe if found
 				runCommandForFile(command);
 			}
 			else {
@@ -136,6 +161,31 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 	context.subscriptions.push(run_tests_in_current_file_command);
+
+	let run_test_under_cursor = vscode.commands.registerCommand('catkin-helpers.run_test_under_cursor', () => {
+		const packagename = getPackagePathOfFilename();
+		if (packagename.length !== 0) {
+			const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shellType');
+			const basename = getBasenameOfFilename();
+			// grep file for TEST, if yes 
+			// search for compiled test executable and start shell process in current terminal with appropriate gtest flags
+			if (checkIfFileHoldsTests()) {
+				const test_at_cursor = getTestAtCursorPosition();
+				const basename_no_ext = basename.split('.')[0]
+				const command = "source $(catkin locate -d)/setup." + shelltype + 							// source stuff
+					" && test_to_run=$(find $(catkin locate -b)/" + packagename + "/devel/lib/" + packagename +
+					" -type f -executable -iname \"*" + basename_no_ext + "*\") " + 						// find the executable that contains the filename
+					"&& if [[ -z $test_to_run ]]; then echo \"No test found containing " + basename_no_ext +
+					". Consider building your tests again.\"; else $test_to_run --gtest_filter=\"*" + test_at_cursor +
+					":*" + test_at_cursor + "/*\";fi";; 													// run test w/ appropriate gtest_filter flags
+				runCommandForFile(command);
+			}
+			else {
+				vscode.window.showWarningMessage("Current file: " + basename + " does NOT contain any tests. Nothing to do here.");
+			}
+		}
+	});
+	context.subscriptions.push(run_test_under_cursor);
 }
 
 export function deactivate() { }
