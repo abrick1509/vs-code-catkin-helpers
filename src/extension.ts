@@ -2,8 +2,10 @@
 import * as vscode from 'vscode';
 let path = require('path');
 let fs = require('fs');
+const util = require('util');
+const exec = util.promisify(require("child_process").exec);
 
-function getPackagePathOfFilename() {
+function getPackageFromFilename() {
 	const editor = vscode.window.activeTextEditor;
 	let packagename = "";
 	if (editor) {
@@ -24,7 +26,21 @@ function getPackagePathOfFilename() {
 	return packagename;
 };
 
-function getBasenameOfFilename() {
+async function getBuildSpace() {
+	let catkin_build_folder = "";
+	try {
+		const dirname = path.dirname(getFullFilename());
+		const { stdout, stderr } = await exec("cd " + dirname + "&& catkin locate -b");
+		catkin_build_folder = stdout;
+		// remove newline
+		catkin_build_folder = catkin_build_folder.replace(/\r?\n|\r/g, "");
+	}
+	catch (err) {
+		console.log("err: " + err);
+	};
+	return catkin_build_folder;
+}
+function getBasenameFromFilename() {
 	const editor = vscode.window.activeTextEditor;
 	let basename = "";
 	if (editor) {
@@ -34,6 +50,27 @@ function getBasenameOfFilename() {
 	}
 	return basename;
 }
+
+function getFullFilename() {
+	const editor = vscode.window.activeTextEditor;
+	let filename = "";
+	if (editor) {
+		const document = editor.document;
+		filename = document.fileName;
+	}
+	return filename;
+}
+
+async function getFullTestExecutableName() {
+	const build_space = await getBuildSpace();
+	const package_name = getPackageFromFilename();
+	const basename_no_ext = getBasenameFromFilename().split('.')[0];
+	// let's try these guys, we prob. need to expand this list and/or do some enhanced test name matching, should be good for now
+	const path_to_testfile1 = build_space + "/" + package_name + "/devel/lib/" + package_name + "/" + package_name + "_" + basename_no_ext;
+	const path_to_testfile2 = build_space + "/" + package_name + "/devel/lib/" + package_name + "/" + basename_no_ext;
+	return [path_to_testfile1, path_to_testfile2];
+}
+
 
 function checkIfFileHoldsTests() {
 	const editor = vscode.window.activeTextEditor;
@@ -76,7 +113,7 @@ function getTerminal() {
 	const terminals = vscode.window.terminals;
 	if (terminals.length === 0) {
 		const term = vscode.window.createTerminal();
-		const packagename = getPackagePathOfFilename();
+		const packagename = getPackageFromFilename();
 		term.show();
 		term.sendText("cd $(catkin locate -s " + packagename + ")\n");
 	}
@@ -93,7 +130,7 @@ export function activate(context: vscode.ExtensionContext) {
 	console.log('Catkin helpers extension activated.');
 
 	let catkin_build_command = vscode.commands.registerCommand('catkin-helpers.catkin_build', () => {
-		const packagename = getPackagePathOfFilename();
+		const packagename = getPackageFromFilename();
 		if (packagename.length !== 0) {
 			const command = "catkin build " + packagename;
 			runCommandForFile(command);
@@ -102,7 +139,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(catkin_build_command);
 
 	let catkin_build_no_deps_command = vscode.commands.registerCommand('catkin-helpers.catkin_build_no_deps', () => {
-		const packagename = getPackagePathOfFilename();
+		const packagename = getPackageFromFilename();
 		if (packagename.length !== 0) {
 			const command = "catkin build " + packagename + " --no-deps\n";
 			runCommandForFile(command);
@@ -112,7 +149,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 
 	let make_command = vscode.commands.registerCommand('catkin-helpers.make', () => {
-		const packagename = getPackagePathOfFilename();
+		const packagename = getPackageFromFilename();
 		if (packagename.length !== 0) {
 			const command = "make install -j20 -C $(catkin locate -b " + packagename + ")";
 			runCommandForFile(command);
@@ -121,7 +158,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(make_command);
 
 	let make_tests_command = vscode.commands.registerCommand('catkin-helpers.make_tests', () => {
-		const packagename = getPackagePathOfFilename();
+		const packagename = getPackageFromFilename();
 		if (packagename.length !== 0) {
 			const command = "make tests -j20 -C $(catkin locate -b " + packagename + ")";
 			runCommandForFile(command);
@@ -130,7 +167,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(make_tests_command);
 
 	let run_tests_command = vscode.commands.registerCommand('catkin-helpers.run_tests', () => {
-		const packagename = getPackagePathOfFilename();
+		const packagename = getPackageFromFilename();
 		if (packagename.length !== 0) {
 			const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shellType')
 			const command = "source $(catkin locate -d)/setup." + shelltype + " && make test -C $(catkin locate -b " + packagename + ")";
@@ -139,21 +176,23 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(run_tests_command);
 
-	let run_tests_in_current_file_command = vscode.commands.registerCommand('catkin-helpers.run_tests_in_file', () => {
-		const packagename = getPackagePathOfFilename();
+	let run_tests_in_current_file_command = vscode.commands.registerCommand('catkin-helpers.run_tests_in_file', async () => {
+		const packagename = getPackageFromFilename();
 		if (packagename.length !== 0) {
 			const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shellType');
-			const basename = getBasenameOfFilename();
-			// grep file for TEST, if yes 
-			// search for compiled test executable and start shell process in current terminal 
+			const basename = getBasenameFromFilename();
 			if (checkIfFileHoldsTests()) {
-				const basename_no_ext = basename.split('.')[0];
-				const command = "source $(catkin locate -d)/setup." + shelltype + 							// source stuff
-					" && test_to_run=$(find $(catkin locate -b)/" + packagename + "/devel/lib/" + packagename +
-					" -type f -executable -iname \"*" + basename_no_ext + "*\") " + 						// find the executable that contains the filename
-					"&& if [[ -z $test_to_run ]]; then echo \"No test found containing " + basename_no_ext +
-					". Consider building your tests again.\"; else $test_to_run;fi";; 						// run exe if found
-				runCommandForFile(command);
+				const full_test_executable_names = await getFullTestExecutableName();
+				for (let test_exec of full_test_executable_names) {
+					if (await fs.existsSync(test_exec)) {
+						const command = "source $(catkin locate -d)/setup." + shelltype +
+							" && " + test_exec;
+						runCommandForFile(command);
+						return;
+					}
+				}
+				// when reaching this, no test has been found/executed
+				vscode.window.showWarningMessage("Test executable could not be found. Looking for " + full_test_executable_names + ". Please consider rebuilding your tests. If this still doesn't fix it, it's due to a current Known Limitation of this extension.");
 			}
 			else {
 				vscode.window.showWarningMessage("Current file: " + basename + " does NOT contain any tests. Nothing to do here.");
@@ -162,23 +201,34 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(run_tests_in_current_file_command);
 
-	let run_test_under_cursor = vscode.commands.registerCommand('catkin-helpers.run_test_under_cursor', () => {
-		const packagename = getPackagePathOfFilename();
+	let run_test_under_cursor = vscode.commands.registerCommand('catkin-helpers.run_test_under_cursor', async () => {
+		const packagename = getPackageFromFilename();
 		if (packagename.length !== 0) {
 			const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shellType');
-			const basename = getBasenameOfFilename();
-			// grep file for TEST, if yes 
-			// search for compiled test executable and start shell process in current terminal with appropriate gtest flags
+			const basename = getBasenameFromFilename();
 			if (checkIfFileHoldsTests()) {
-				const test_at_cursor = getTestAtCursorPosition();
-				const basename_no_ext = basename.split('.')[0]
-				const command = "source $(catkin locate -d)/setup." + shelltype + 							// source stuff
-					" && test_to_run=$(find $(catkin locate -b)/" + packagename + "/devel/lib/" + packagename +
-					" -type f -executable -iname \"*" + basename_no_ext + "*\") " + 						// find the executable that contains the filename
-					"&& if [[ -z $test_to_run ]]; then echo \"No test found containing " + basename_no_ext +
-					". Consider building your tests again.\"; else $test_to_run --gtest_filter=\"*" + test_at_cursor +
-					":*" + test_at_cursor + "/*\";fi";; 													// run test w/ appropriate gtest_filter flags
-				runCommandForFile(command);
+				let test_at_cursor = getTestAtCursorPosition();
+				if (test_at_cursor === "") {
+					vscode.window.showWarningMessage("No test under cursor found. Nothing do to here.");
+					return;
+				}
+				test_at_cursor = test_at_cursor.replace(/Fixture/g, "");
+				// we need to split the exact test name here and filter out some stuff, since gtest does some magic for naming test fixtures (sometimes it drops the Fixture, sometimes in adds in a Test)
+				const test_at_cursor_splits = test_at_cursor.split('.');
+				const test_under_cursor_to_run = test_at_cursor_splits[0] + "*." + test_at_cursor_splits[1];
+				const full_test_executable_names = await getFullTestExecutableName();
+				for (let test_exec of full_test_executable_names) {
+					if (await fs.existsSync(test_exec)) {
+						// again we need some globbing for the gtest_filter string here since we need to handle parameterized tests/tests fixtures as well
+						const command = "source $(catkin locate -d)/setup." + shelltype +
+							" && " + test_exec + " --gtest_filter=\"*" + test_under_cursor_to_run +
+							":*" + test_under_cursor_to_run + "/*\"";
+						runCommandForFile(command);
+						return;
+					}
+				}
+				// when reaching this, no test has been found/executed
+				vscode.window.showWarningMessage("Test executable could not be found. Looking for " + full_test_executable_names + ". Please consider rebuilding your tests. If this still doesn't fix it, it's due to a current Known Limitation of this extension.");
 			}
 			else {
 				vscode.window.showWarningMessage("Current file: " + basename + " does NOT contain any tests. Nothing to do here.");
