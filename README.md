@@ -30,8 +30,12 @@ Provides some simple helper functions to work with catkin projects. It basically
 Since our current project setup relies on various environmental variables/sourced files for test execution, this extension intentionally doesn't register itself as a Test Adapter for the general Test Explorer extension. It seemed easier and more appropriate to just execute the tests in the integrated terminal (since this is already fully setup and properly sourced). Also, this allows for straight forward error handling.  
 This might need to be changed in future versions.
 ## Known Issues
-When executing tests this extension looks for a test executable name that includes the active file's name as a substring in the build-folder of the active file's package. So far we are simply matching against `*filename*` here.  
-This seems appropriate for our current project setup. However, we might want to extend/improve on this to allow for a more general test creation.
+When executing tests, this extension looks for the following hard-coded test executable names:
+* `{filename}`
+* `{package_name}_{filename}`
+  
+This seems appropriate for our current project setup. However, we might want to extend/improve on this to allow for a more general test creation. 
+Let's see how far we can get with this.
 
 **Please report bugs! This is a very early version!**
 
