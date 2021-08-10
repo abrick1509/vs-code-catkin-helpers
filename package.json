@@ -102,6 +102,9 @@
 		}
 	},
 	"repository": "https://github.com/abrick1509/vs-code-catkin-helpers.git",
+	"bugs": {
+		"url": "https://github.com/abrick1509/vs-code-catkin-helpers/issues"
+	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -p ./",
