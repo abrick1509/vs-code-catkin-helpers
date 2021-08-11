@@ -5,6 +5,7 @@ let fs = require('fs');
 const util = require('util');
 const exec = util.promisify(require("child_process").exec);
 
+// todo: export all these functions into separate files
 function getPackageFromFilename() {
 	const editor = vscode.window.activeTextEditor;
 	let packagename = "";
@@ -109,50 +110,40 @@ function getTestAtCursorPosition() {
 	return "";
 }
 
+// todo: check if in catkin workspace
 function getTerminal() {
 	const terminals = vscode.window.terminals;
 	if (terminals.length === 0) {
 		const term = vscode.window.createTerminal();
-		const packagename = getPackageFromFilename();
 		term.show();
-		term.sendText("cd $(catkin locate -s " + packagename + ")\n");
+		term.sendText("cd $(catkin locate -s)\n");
 	}
 	return vscode.window.terminals[0];
 }
 
-function runCommandForFile(command: string) {
+function runCommand(command: string) {
 	const terminal = getTerminal();
 	terminal.show();
 	terminal.sendText(command + "\n");
 }
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 	console.log('Catkin helpers extension activated.');
 
 	let catkin_build_command = vscode.commands.registerCommand('catkin-helpers.catkin_build', () => {
 		const packagename = getPackageFromFilename();
 		if (packagename.length !== 0) {
 			const command = "catkin build " + packagename;
-			runCommandForFile(command);
+			runCommand(command);
 		}
 	});
 	context.subscriptions.push(catkin_build_command);
-
-	let catkin_build_no_deps_command = vscode.commands.registerCommand('catkin-helpers.catkin_build_no_deps', () => {
-		const packagename = getPackageFromFilename();
-		if (packagename.length !== 0) {
-			const command = "catkin build " + packagename + " --no-deps\n";
-			runCommandForFile(command);
-		}
-	});
-	context.subscriptions.push(catkin_build_no_deps_command);
-
 
 	let make_command = vscode.commands.registerCommand('catkin-helpers.make', () => {
 		const packagename = getPackageFromFilename();
 		if (packagename.length !== 0) {
 			const command = "make install -j20 -C $(catkin locate -b " + packagename + ")";
-			runCommandForFile(command);
+			runCommand(command);
 		}
 	});
 	context.subscriptions.push(make_command);
@@ -161,7 +152,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const packagename = getPackageFromFilename();
 		if (packagename.length !== 0) {
 			const command = "make tests -j20 -C $(catkin locate -b " + packagename + ")";
-			runCommandForFile(command);
+			runCommand(command);
 		}
 	});
 	context.subscriptions.push(make_tests_command);
@@ -171,7 +162,7 @@ export function activate(context: vscode.ExtensionContext) {
 		if (packagename.length !== 0) {
 			const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shellType')
 			const command = "source $(catkin locate -d)/setup." + shelltype + " && make test -C $(catkin locate -b " + packagename + ")";
-			runCommandForFile(command);
+			runCommand(command);
 		}
 	});
 	context.subscriptions.push(run_tests_command);
@@ -187,7 +178,7 @@ export function activate(context: vscode.ExtensionContext) {
 					if (await fs.existsSync(test_exec)) {
 						const command = "source $(catkin locate -d)/setup." + shelltype +
 							" && " + test_exec;
-						runCommandForFile(command);
+						runCommand(command);
 						return;
 					}
 				}
@@ -223,7 +214,7 @@ export function activate(context: vscode.ExtensionContext) {
 						const command = "source $(catkin locate -d)/setup." + shelltype +
 							" && " + test_exec + " --gtest_filter=\"*" + test_under_cursor_to_run +
 							":*" + test_under_cursor_to_run + "/*\"";
-						runCommandForFile(command);
+						runCommand(command);
 						return;
 					}
 				}
@@ -236,6 +227,62 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 	context.subscriptions.push(run_test_under_cursor);
+
+	let catkin_build_package_from_list = vscode.commands.registerCommand('catkin-helpers.catkin_build_package_from_list', async () => {
+		if (catkin_packages.length === 0) {
+			vscode.window.showInformationMessage("Please wait for package caching to finish.");
+			return;
+		}
+		const selection = await vscode.window.showQuickPick(catkin_packages, { canPickMany: false, title: "Select package to build:" });
+		if (selection !== undefined) {
+			const command = "catkin build " + selection.valueOf();
+			runCommand(command);
+		}
+	});
+	context.subscriptions.push(catkin_build_package_from_list);
+
+	let make_package_from_list = vscode.commands.registerCommand('catkin-helpers.make_package_from_list', async () => {
+		if (build_packages.length === 0) {
+			vscode.window.showInformationMessage("Please wait for caching of build folder to finish.");
+			return;
+		}
+		const selection = await vscode.window.showQuickPick(build_packages, { canPickMany: false, title: "Select package to build:" });
+		if (selection !== undefined) {
+			const command = "make install -j20 -C $(catkin locate -b " + selection.valueOf() + ")";
+			runCommand(command);
+		}
+	});
+	context.subscriptions.push(make_package_from_list);
+
+	// load all packages in workspace
+	let catkin_packages: string[] = [];
+	let build_packages: string[] = [];
+	// todo: check if we are in a catkin workspace
+	if (vscode.workspace.workspaceFolders[0] !== undefined) {
+		try {
+			// find all catkin packages under /src
+			{
+				const { stdout } = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
+					progress.report({ message: "Catkin Helpers: Caching catkin packages..." });
+					// todo: Use some async lib here (e.g. glob)
+					return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -s) -type f -name \"package.xml\" | xargs -I{} sed -n -E \'s#<name>(.*)<\/name>#\\1#p\' {}");
+				});
+				catkin_packages = stdout.split('\n').filter(val => val !== "");
+			}
+
+			// find all packages under ../build
+			{
+				const { stdout } = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
+					progress.report({ message: "Catkin Helpers: Caching build packages..." });
+					// todo: Use some async lib here (e.g. glob)
+					return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -b) -maxdepth 1 -mindepth 1 -type d | sed -E -n \'s#.*/(.*)#\\1#p\'");
+				});
+				build_packages = stdout.split('\n').filter(val => val !== "");
+			}
+		} catch (err) {
+			vscode.window.showErrorMessage("Couldn't resolve all packages in workspace: " + err);
+		}
+	}
 }
 
 export function deactivate() { }
