@@ -23,8 +23,8 @@ Provides some simple helper functions to work with catkin projects. It basically
 | ------------------------------------------------------------- | ------------------- | ------------- |
 | `Catkin Helpers (Current File): catkin-build current package` | See 1.1 from above  | `undefined`   |
 | `Catkin Helpers (Current File): Make current package`         | See 1.2. from above | `ctrl+b`      |
-| `Catkin Helpers (Selection): Select package to catkin-build`  | See 2.1. from above | `undefined`   |
-| `Catkin Helpers (Selection): Select package to make`          | See 2.2. from above | `ctrl+m`      |
+| `Catkin Helpers (List): Select package to catkin-build`       | See 2.1. from above | `undefined`   |
+| `Catkin Helpers (List): Select package to make`               | See 2.2. from above | `ctrl+m`      |
 | `Catkin Helpers (Test): Make tests of current package`        | See 3.1. from above | `undefined`   |
 | `Catkin Helpers (Test): Run tests of current package`         | See 3.2. from above | `undefined`   |
 | `Catkin Helpers (Test): Run tests of current file`            | See 3.3. from above | `undefined`   |
