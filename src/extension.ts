@@ -261,24 +261,24 @@ export async function activate(context: vscode.ExtensionContext) {
 	if (vscode.workspace.workspaceFolders[0] !== undefined) {
 		try {
 			// find all catkin packages under /src
-			{
-				const { stdout } = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
-					progress.report({ message: "Catkin Helpers: Caching catkin packages..." });
-					// todo: Use some async lib here (e.g. glob)
-					return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -s) -type f -name \"package.xml\" | xargs -I{} sed -n -E \'s#<name>(.*)<\/name>#\\1#p\' {}");
-				});
-				catkin_packages = stdout.split('\n').filter(val => val !== "");
-			}
+			const catkin_package_cache_promise = vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
+				progress.report({ message: "Catkin Helpers: Caching catkin packages..." });
+				// todo: Use some async lib here (e.g. glob)
+				return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -s) -type f -name \"package.xml\" | xargs -I{} sed -n -E \'s#<name>(.*)<\/name>#\\1#p\' {}");
+			});
+			catkin_package_cache_promise.then(result => {
+				catkin_packages = result["stdout"].split('\n').filter(val => val !== "");
+			});
 
 			// find all packages under ../build
-			{
-				const { stdout } = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
-					progress.report({ message: "Catkin Helpers: Caching build packages..." });
-					// todo: Use some async lib here (e.g. glob)
-					return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -b) -maxdepth 1 -mindepth 1 -type d | sed -E -n \'s#.*/(.*)#\\1#p\'");
-				});
-				build_packages = stdout.split('\n').filter(val => val !== "");
-			}
+			const build_package_cache_promise = vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
+				progress.report({ message: "Catkin Helpers: Caching build packages..." });
+				// todo: Use some async lib here (e.g. glob)
+				return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -b) -maxdepth 1 -mindepth 1 -type d | sed -E -n \'s#.*/(.*)#\\1#p\'");
+			});
+			build_package_cache_promise.then(result => {
+				build_packages = result["stdout"].split('\n').filter(val => val !== "");
+			});
 		} catch (err) {
 			vscode.window.showErrorMessage("Couldn't resolve all packages in workspace: " + err);
 		}
