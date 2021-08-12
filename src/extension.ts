@@ -1,9 +1,14 @@
 // Import the module and reference it with the alias vscode in your code below
+let fast_glob = require('fast-glob');
 import * as vscode from 'vscode';
 let path = require('path');
 let fs = require('fs');
 const util = require('util');
 const exec = util.promisify(require("child_process").exec);
+
+async function wait(ms) {
+	await new Promise(resolve => { setTimeout(resolve, ms); });
+}
 
 // todo: export all these functions into separate files
 function getPackageFromFilename() {
@@ -263,7 +268,6 @@ export async function activate(context: vscode.ExtensionContext) {
 			// find all catkin packages under /src
 			const catkin_package_cache_promise = vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
 				progress.report({ message: "Catkin Helpers: Caching catkin packages..." });
-				// todo: Use some async lib here (e.g. glob)
 				return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -s) -type f -name \"package.xml\" | xargs -I{} sed -n -E \'s#<name>(.*)<\/name>#\\1#p\' {}");
 			});
 			catkin_package_cache_promise.then(result => {
@@ -273,7 +277,6 @@ export async function activate(context: vscode.ExtensionContext) {
 			// find all packages under ../build
 			const build_package_cache_promise = vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
 				progress.report({ message: "Catkin Helpers: Caching build packages..." });
-				// todo: Use some async lib here (e.g. glob)
 				return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -b) -maxdepth 1 -mindepth 1 -type d | sed -E -n \'s#.*/(.*)#\\1#p\'");
 			});
 			build_package_cache_promise.then(result => {
