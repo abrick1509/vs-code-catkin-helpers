@@ -10,6 +10,17 @@ export async function wait(ms) {
     await new Promise(resolve => { setTimeout(resolve, ms); });
 }
 
+export function log(message: string, value?: any) {
+    let stream = "Catkin Helpers: " + message;
+    if (value) {
+        stream += ": " + value;
+    }
+    else {
+        stream += ".";
+    }
+    console.log(stream);
+}
+
 export function getPackageFromFilename() {
     const editor = vscode.window.activeTextEditor;
     let packagename = "";
@@ -35,10 +46,7 @@ export async function getBuildSpace() {
     let catkin_build_folder = "";
     try {
         const dirname = path.dirname(getFullFilename());
-        const { stdout, stderr } = await exec("cd " + dirname + "&& catkin locate -b");
-        catkin_build_folder = stdout;
-        // remove newline
-        catkin_build_folder = catkin_build_folder.replace(/\r?\n|\r/g, "");
+        exec("cd " + dirname + "&& catkin locate -b").then((stdout, stderr) => { catkin_build_folder = stdout.replace(/\r?\n|\r/g, ""); });
     }
     catch (err) {
         console.log("err: " + err);
@@ -50,9 +58,7 @@ export function getBasenameFromFilename() {
     const editor = vscode.window.activeTextEditor;
     let basename = "";
     if (editor) {
-        const document = editor.document;
-        const filename = document.fileName;
-        basename = path.basename(filename);
+        basename = path.basename(editor.document.fileName);
     }
     return basename;
 }
@@ -61,8 +67,7 @@ export function getFullFilename() {
     const editor = vscode.window.activeTextEditor;
     let filename = "";
     if (editor) {
-        const document = editor.document;
-        filename = document.fileName;
+        filename = editor.document.fileName;
     }
     return filename;
 }
@@ -82,9 +87,7 @@ export function checkIfFileHoldsTests() {
     const editor = vscode.window.activeTextEditor;
     let has_tests = false;
     if (editor) {
-        const document = editor.document;
-        const filename = document.fileName;
-        const content = fs.readFileSync(filename).toString();
+        const content = fs.readFileSync(editor.document.fileName).toString();
         if (content.includes("TEST")) {
             has_tests = true;
         }
@@ -97,8 +100,7 @@ export function getTestAtCursorPosition() {
     if (editor) {
         // search for the latest match on TEST[_FP] from the start of document until the current cursor position
         const cursor_position = editor.selection.active;
-        const document = editor.document;
-        const text = document.getText(new vscode.Range(new vscode.Position(0, 0), cursor_position));
+        const text = editor.document.getText(new vscode.Range(new vscode.Position(0, 0), cursor_position));
         const test_matches = text.match(/TEST(_F|_P)*\(\w*,\s*\w*\)/g);
         // this should have been checked before, anyways make sure we don't segfault here
         if (!test_matches) {
@@ -115,7 +117,6 @@ export function getTestAtCursorPosition() {
     return "";
 }
 
-// todo: check if in catkin workspace
 export function getTerminal() {
     const terminals = vscode.window.terminals;
     if (terminals.length === 0) {

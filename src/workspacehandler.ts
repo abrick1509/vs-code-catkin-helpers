@@ -4,28 +4,53 @@ import * as vscode from 'vscode';
 import * as util from 'util';
 const exec = util.promisify(require("child_process").exec);
 import * as utils from './utils';
+import * as shell_commands from './shell_commands'
 
 
 export class WorkspaceHandler {
     private catkin_packages: string[] = [];
     private build_packages: string[] = [];
     private caching_done = false;
+    private in_catkin_workspace = false;
 
 
     constructor() {
-        let workers = [];
-        workers.push(this.cacheCatkinPackages());
-        workers.push(this.cacheBuildPackages());
-        Promise.all(workers).then(() => {
-            this.caching_done = true;
-        });
+        // 1. check if we are in a catkin workspace (this is the main requirement for this extension)
+        // 1.1 check if there is a workspace at all or if it's just single files
+        if (vscode.workspace.workspaceFolders[0] === undefined) {
+            this.in_catkin_workspace = false;
+            return;
+        }
+        // 1.2 actually check if this is a catkin workspace
+        try {
+            const workspace_folder_path = vscode.workspace.workspaceFolders[0].uri.fsPath;
+            shell_commands.runShellCommandSync(workspace_folder_path, "catkin locate -s");
+            this.in_catkin_workspace = true;
+        }
+        catch (err) {
+            this.in_catkin_workspace = false;
+            return;
+        }
+
+        if (this.isCatkinWorkspace()) {
+            // 2. cache all catkin packages and build folder
+            let workers = [];
+            workers.push(this.cacheCatkinPackages());
+            workers.push(this.cacheBuildPackages());
+            Promise.all(workers).then(() => {
+                this.caching_done = true;
+            });
+        }
+    }
+
+    isCatkinWorkspace(): boolean {
+        return this.in_catkin_workspace;
     }
 
     private async cacheCatkinPackages() {
-        // todo: check if we are in a catkin workspace
         if (vscode.workspace.workspaceFolders[0] !== undefined) {
             try {
-                // find all catkin packages under /src
+                // find all catkin packages under /src                
                 return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
                     progress.report({ message: "Catkin Helpers: Caching catkin packages..." });
                     return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -s) -type f -name \"package.xml\" | xargs -I{} sed -n -E \'s#<name>(.*)<\/name>#\\1#p\' {}");
@@ -39,7 +64,6 @@ export class WorkspaceHandler {
     }
 
     private async cacheBuildPackages() {
-        // todo: check if we are in a catkin workspace
         if (vscode.workspace.workspaceFolders[0] !== undefined) {
             try {
                 // find all packages under ../build

@@ -2,14 +2,19 @@
 import * as vscode from 'vscode';
 
 import * as commands from './commands';
+import { log } from './utils';
 import * as workspacehandler from './workspacehandler';
 
-let workspaceHandler = new workspacehandler.WorkspaceHandler();
-
+// load all packages in workspace
+const workspaceHandler = new workspacehandler.WorkspaceHandler();
 
 export async function activate(context: vscode.ExtensionContext) {
-	// load all packages in workspace
 	console.log('Catkin helpers extension activated.');
+
+	if (!workspaceHandler.isCatkinWorkspace()) {
+		log("Not in catkin workspace. Not registering any functions");
+		return;
+	}
 
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.catkin_build', commands.catkinBuildCurrentPackage));
 
