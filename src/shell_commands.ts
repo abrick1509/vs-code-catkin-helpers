@@ -24,13 +24,13 @@ export function runShellCommand(cwd: string, command: string, args?: string[]): 
         result.command = command_and_args;
         log("Running command: " + command_and_args);
         child_process.exec(command_and_args, options, (error, stdout, stderr) => {
+            result.error = error;
+            result.stdout = stdout;
+            result.stderr = stderr;
             if (error) {
-                result.error = error;
                 reject(result);
             }
             else {
-                result.stdout = stdout;
-                result.stderr = stderr;
                 resolve(result);
             }
         });
