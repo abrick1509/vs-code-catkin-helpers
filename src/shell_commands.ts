@@ -13,14 +13,16 @@ class ShellCommandOutput {
 
 }
 
-// untested
 export function runShellCommand(cwd: string, command: string, args?: string[]): Promise<ShellCommandOutput> {
     return new Promise<ShellCommandOutput>((resolve, reject) => {
         let options: child_process.ExecOptions = { cwd: cwd };
-        let command_and_args = command + args.join(" ");
+        let command_and_args = command
+        if (args) {
+            command_and_args += args.join(" ");
+        }
         let result = new ShellCommandOutput();
         result.command = command_and_args;
-        log(`Running command: ${command_and_args}`);
+        log("Running command: " + command_and_args);
         child_process.exec(command_and_args, options, (error, stdout, stderr) => {
             if (error) {
                 result.error = error;

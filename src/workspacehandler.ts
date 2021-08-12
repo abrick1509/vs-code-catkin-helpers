@@ -1,11 +1,8 @@
 
 import * as vscode from 'vscode';
 
-import * as util from 'util';
-const exec = util.promisify(require("child_process").exec);
 import * as utils from './utils';
-import * as shell_commands from './shell_commands'
-
+import * as shell_commands from './shell_commands';
 
 export class WorkspaceHandler {
     private catkin_packages: string[] = [];
@@ -53,9 +50,10 @@ export class WorkspaceHandler {
                 // find all catkin packages under /src                
                 return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
                     progress.report({ message: "Catkin Helpers: Caching catkin packages..." });
-                    return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -s) -type f -name \"package.xml\" | xargs -I{} sed -n -E \'s#<name>(.*)<\/name>#\\1#p\' {}");
+                    const command = "find $(catkin locate -s) -type f -name \"package.xml\" | xargs -I{} sed -n -E \'s#<name>(.*)<\/name>#\\1#p\' {}";
+                    return shell_commands.runShellCommand(vscode.workspace.workspaceFolders[0].uri.path, command);
                 }).then(result => {
-                    this.catkin_packages = result["stdout"].split('\n').filter(val => val !== "");
+                    this.catkin_packages = result.stdout.split('\n').filter(val => val !== "");
                 });
             } catch (err) {
                 vscode.window.showErrorMessage("Couldn't cache all packages in workspace: " + err);
@@ -69,9 +67,9 @@ export class WorkspaceHandler {
                 // find all packages under ../build
                 return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
                     progress.report({ message: "Catkin Helpers: Caching build packages..." });
-                    return exec("cd " + vscode.workspace.workspaceFolders[0].uri.path + "&& find $(catkin locate -b) -maxdepth 1 -mindepth 1 -type d | sed -E -n \'s#.*/(.*)#\\1#p\'");
+                    return shell_commands.runShellCommand(vscode.workspace.workspaceFolders[0].uri.path, "find $(catkin locate -b) -maxdepth 1 -mindepth 1 -type d | sed -E -n \'s#.*/(.*)#\\1#p\'");
                 }).then(result => {
-                    this.build_packages = result["stdout"].split('\n').filter(val => val !== "");
+                    this.build_packages = result.stdout.split('\n').filter(val => val !== "");
                 });
             } catch (err) {
                 vscode.window.showErrorMessage("Couldn't parse build folder: " + err);
