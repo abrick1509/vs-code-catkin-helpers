@@ -122,7 +122,6 @@ export function getTerminal() {
     if (terminals.length === 0) {
         const term = vscode.window.createTerminal();
         term.show();
-        term.sendText("cd $(catkin locate -s)\n");
     }
     return vscode.window.terminals[0];
 }
