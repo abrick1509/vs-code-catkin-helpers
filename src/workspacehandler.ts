@@ -73,10 +73,17 @@ export class WorkspaceHandler {
         }
     }
 
+    private cachingDone() {
+        if (!this.caching_done) {
+            vscode.window.showInformationMessage("Please wait for package caching to finish.");
+            return false;
+        }
+        return true;
+    }
+
     async catkinBuildPackageFromList() {
         try {
-            if (!this.caching_done) {
-                vscode.window.showInformationMessage("Please wait for package caching to finish.");
+            if (!this.cachingDone()) {
                 return;
             }
             const selection = await vscode.window.showQuickPick(this.catkin_packages, { canPickMany: false, title: "Select package to build:" });
@@ -92,8 +99,7 @@ export class WorkspaceHandler {
 
     async makePackageFromList() {
         try {
-            if (!this.caching_done) {
-                vscode.window.showInformationMessage("Please wait for caching of build folder to finish.");
+            if (!this.cachingDone()) {
                 return;
             }
             const selection = await vscode.window.showQuickPick(this.build_packages, { canPickMany: false, title: "Select package to build:" });

@@ -9,7 +9,7 @@ import * as workspacehandler from './workspacehandler';
 const workspaceHandler = new workspacehandler.WorkspaceHandler();
 
 export async function activate(context: vscode.ExtensionContext) {
-	console.log('Catkin helpers extension activated.');
+	log('Catkin helpers extension activated.');
 
 	if (!workspaceHandler.isCatkinWorkspace()) {
 		log("Not in catkin workspace. Not registering any functions");
