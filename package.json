@@ -52,6 +52,11 @@
 				"command": "catkin-helpers.make_package_from_list",
 				"title": "Catkin Helpers (List): Select package to make",
 				"enablement": "editorLangId == cpp"
+			},
+			{
+				"command": "catkin-helpers.update_caches",
+				"title": "Catkin Helpers (List): Update package caches",
+				"enablement": "editorLangId == cpp"
 			}
 		],
 		"keybindings": [

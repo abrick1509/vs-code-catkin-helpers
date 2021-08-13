@@ -31,6 +31,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.catkin_build_package_from_list', () => { return workspaceHandler.catkinBuildPackageFromList(); }));
 
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.make_package_from_list', () => { return workspaceHandler.makePackageFromList(); }));
+
+	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.update_caches', () => { return workspaceHandler.updateCaches(); }));
 }
 
 export function deactivate() { }
