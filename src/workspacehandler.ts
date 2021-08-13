@@ -45,35 +45,31 @@ export class WorkspaceHandler {
     }
 
     private async cacheCatkinPackages() {
-        if (vscode.workspace.workspaceFolders[0] !== undefined) {
-            try {
-                // find all catkin packages under /src                
-                return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
-                    progress.report({ message: "Catkin Helpers: Caching catkin packages..." });
-                    const command = "find $(catkin locate -s) -type f -name \"package.xml\" | xargs -I{} sed -n -E \'s#<name>(.*)<\/name>#\\1#p\' {}";
-                    return shell_commands.runShellCommand(vscode.workspace.workspaceFolders[0].uri.path, command);
-                }).then(result => {
-                    this.catkin_packages = result.stdout.split('\n').filter(val => val !== "");
-                });
-            } catch (err) {
-                vscode.window.showErrorMessage("Couldn't cache all packages in workspace: " + err);
-            }
+        try {
+            // find all catkin packages under /src                
+            return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
+                progress.report({ message: "Catkin Helpers: Caching catkin packages..." });
+                const command = "find $(catkin locate -s)/planning/trajectory -type f -name \"package.xml\" | xargs -I{} sed -n -E \'s#<name>(.*)<\/name>#\\1#p\' {}";
+                return shell_commands.runShellCommand(vscode.workspace.workspaceFolders[0].uri.path, command);
+            }).then(result => {
+                this.catkin_packages = result.stdout.split('\n').filter(val => val !== "");
+            });
+        } catch (err) {
+            vscode.window.showErrorMessage("Couldn't cache all packages in workspace: " + err);
         }
     }
 
     private async cacheBuildPackages() {
-        if (vscode.workspace.workspaceFolders[0] !== undefined) {
-            try {
-                // find all packages under ../build
-                return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
-                    progress.report({ message: "Catkin Helpers: Caching build packages..." });
-                    return shell_commands.runShellCommand(vscode.workspace.workspaceFolders[0].uri.path, "find $(catkin locate -b) -maxdepth 1 -mindepth 1 -type d | sed -E -n \'s#.*/(.*)#\\1#p\'");
-                }).then(result => {
-                    this.build_packages = result.stdout.split('\n').filter(val => val !== "");
-                });
-            } catch (err) {
-                vscode.window.showErrorMessage("Couldn't parse build folder: " + err);
-            }
+        try {
+            // find all packages under ../build
+            return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, cancellable: false }, (progress) => {
+                progress.report({ message: "Catkin Helpers: Caching build packages..." });
+                return shell_commands.runShellCommand(vscode.workspace.workspaceFolders[0].uri.path, "find $(catkin locate -b) -maxdepth 1 -mindepth 1 -type d | sed -E -n \'s#.*/(.*)#\\1#p\'");
+            }).then(result => {
+                this.build_packages = result.stdout.split('\n').filter(val => val !== "");
+            });
+        } catch (err) {
+            vscode.window.showErrorMessage("Couldn't parse build folder: " + err);
         }
     }
 
