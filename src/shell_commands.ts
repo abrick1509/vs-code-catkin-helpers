@@ -1,7 +1,5 @@
 
-
-import * as util from 'util';
-const exec = util.promisify(require("child_process").exec);
+import * as vscode from 'vscode';
 import * as child_process from 'child_process';
 import { log } from './utils';
 
@@ -22,7 +20,7 @@ export function runShellCommand(cwd: string, command: string, args?: string[]): 
         }
         let result = new ShellCommandOutput();
         result.command = command_and_args;
-        log("Running command: " + command_and_args);
+        log("Running command: ", command_and_args);
         child_process.exec(command_and_args, options, (error, stdout, stderr) => {
             result.error = error;
             result.stdout = stdout;
@@ -47,12 +45,18 @@ export function runShellCommandSync(cwd: string, command: string, args?: string[
             command_and_args += args.join(" ");
         }
         result.command = command_and_args;
-        log("Running command: " + command_and_args);
+        log("Running command: ", command_and_args);
         result.stdout = child_process.execSync(command_and_args, options).toString();
-        child_process.execSync(command_and_args, options).toString();
     }
     catch (err) {
-        console.log("err: " + err);
+        log("err: ", err);
     }
     return result;
+}
+
+export function getShellType(): string {
+    const command = "shell_path=$0; echo ${shell_path##*/}";
+    const result = runShellCommandSync(vscode.workspace.workspaceFolders[0].uri.fsPath, command);
+    log("result: ", result);
+    return result.stdout.trim();
 }

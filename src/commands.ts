@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 
 import * as fs from 'fs';
 import * as utils from './utils';
+import * as shell_commands from './shell_commands';
 
 export function catkinBuildCurrentPackage() {
     const packagename = utils.getPackageFromFilename();
@@ -25,14 +26,15 @@ export function makeTestsCurrentPackage() {
 
 export function runTestsCurrentPackage() {
     const packagename = utils.getPackageFromFilename();
-    const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shellType')
+    const shelltype = shell_commands.getShellType();
     const command = "source $(catkin locate -d)/setup." + shelltype + " && make test -C $(catkin locate -b " + packagename + ")";
     utils.runCommand(command);
 };
 
 export async function runTestsInFile() {
-    const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shellType');
+    // const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shellType');
     const basename = utils.getBasenameFromFilename();
+    const shelltype = shell_commands.getShellType();
     if (utils.checkIfFileHoldsTests()) {
         const full_test_executable_names = await utils.getFullTestExecutableName();
         for (let test_exec of full_test_executable_names) {
@@ -52,7 +54,7 @@ export async function runTestsInFile() {
 };
 
 export async function runTestUnderCursor() {
-    const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shellType');
+    const shelltype = shell_commands.getShellType();
     const basename = utils.getBasenameFromFilename();
     if (utils.checkIfFileHoldsTests()) {
         let test_at_cursor = utils.getTestAtCursorPosition();
