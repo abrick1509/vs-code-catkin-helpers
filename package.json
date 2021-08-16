@@ -5,7 +5,7 @@
 	"publisher": "abrick",
 	"version": "1.5.0",
 	"engines": {
-		"vscode": "^1.58.0"
+		"vscode": "^1.59.0"
 	},
 	"activationEvents": [
 		"onLanguage:cpp"
@@ -31,21 +31,6 @@
 			{
 				"command": "catkin-helpers.run_tests",
 				"title": "Catkin Helpers (Test): Run tests of current package",
-				"enablement": "editorLangId == cpp"
-			},
-			{
-				"command": "catkin-helpers.run_tests_in_file",
-				"title": "Catkin Helpers (Test): Run tests in current file",
-				"enablement": "editorLangId == cpp"
-			},
-			{
-				"command": "catkin-helpers.run_test_under_cursor",
-				"title": "Catkin Helpers (Test): Run test under cursor",
-				"enablement": "editorLangId == cpp"
-			},
-			{
-				"command": "catkin-helpers.load_test_results",
-				"title": "Catkin Helpers (Test): Load test result of current package",
 				"enablement": "editorLangId == cpp"
 			},
 			{
@@ -82,16 +67,6 @@
 			},
 			{
 				"command": "catkin-helpers.run_tests",
-				"key": "",
-				"when": "editorTextFocus"
-			},
-			{
-				"command": "catkin-helpers.run_tests_in_file",
-				"key": "",
-				"when": "editorTextFocus"
-			},
-			{
-				"command": "catkin-helpers.run_tests_under_cursor",
 				"key": "",
 				"when": "editorTextFocus"
 			},

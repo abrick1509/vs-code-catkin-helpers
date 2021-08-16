@@ -34,8 +34,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.update_caches', () => { return workspaceHandler.updateCaches(); }));
 
-	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.load_test_results', () => { return testHandler.update(); }));
-
 	// context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.run_test_under_cursor', commands.runTestUnderCursor));
 
 	// context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.run_tests_in_file', commands.runTestsInFile));

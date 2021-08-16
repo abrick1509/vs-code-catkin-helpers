@@ -17,7 +17,7 @@ export function getTestResultXMLsForPackage(package_name: string) {
     let most_recent_test_results = [];
     files.forEach(file => {
         // get all result files for same test (they are increment by a trailing number in the filename)
-        const filename_wo_number = file.replace(/_\d/, "").replace(/\.xml/, "");
+        const filename_wo_number = file.replace(/_\d+/, "").replace(/\.xml/, "");
         const files_same_test = files.filter(val => {
             return val.includes(filename_wo_number);
         });
@@ -32,7 +32,7 @@ export function getTestResultXMLsForPackage(package_name: string) {
             }
         });
         // save this into the most_recent_test_results (and yes this will do redundant work, todo: find a better solution)
-        if (most_recent_test_results.indexOf(last_modified_file) === -1) {
+        if (most_recent_test_results.indexOf(last_modified_file) === -1 && last_modified_file !== "") {
             most_recent_test_results.push(last_modified_file);
         }
     });

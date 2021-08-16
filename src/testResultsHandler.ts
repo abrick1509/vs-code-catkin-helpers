@@ -24,22 +24,20 @@ export class TestCaseHandler {
 
 
 
-    updateWatchedPackage(package_to_watch: string): void {
+    private updateWatchedPackage(package_to_watch: string): void {
         this.watched_package = package_to_watch;
-        console.log("package_to_watch: " + package_to_watch);
         this.results_dir = test_utils.getTestResultsDir(this.watched_package);
         if (this.results_dir_watcher !== undefined) {
             this.results_dir_watcher.dispose();
         }
         this.results_dir_watcher = vscode.workspace.createFileSystemWatcher(path.join(this.results_dir, "*.xml").toString());
         this.results_dir_watcher.onDidCreate(() => {
-            console.log("noticed creation of new file: ");
             this.update();
         });
 
     }
 
-    update(focus_test_explorer = true) {
+    private update(focus_test_explorer = true) {
         this.controller.items.replace([]);
         let most_recent_test_results = [];
         try {
