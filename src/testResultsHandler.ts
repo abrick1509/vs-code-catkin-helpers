@@ -1,13 +1,12 @@
 
 import * as vscode from 'vscode';
-
 import * as fs from 'fs';
+import * as path from 'path';
+import * as convert from 'xml-js';
+
 import * as utils from './utils';
 import * as test_utils from './test_utils';
-import * as convert from 'xml-js';
 import * as shell_commands from './shell_commands';
-import path = require('path');
-
 export class TestCaseHandler {
     private watched_package: string = "";
     private results_dir: string = "";
@@ -49,17 +48,27 @@ export class TestCaseHandler {
         }
 
         let run = this.controller.createTestRun(new vscode.TestRunRequest(), "TestRunner", false);
-        most_recent_test_results.forEach(file => {
-            const content = fs.readFileSync(file);
-            const result = JSON.parse(convert.xml2json(content.toString(), { compact: true }));
-            // traverse all testsuites items and add there test-cases to the controller's item collection (this is required for GUI interaction)
-            test_utils.handleJSONArray(result.testsuites.testsuite, test_utils.addTestSuiteItem, this.controller, run);
+        vscode.window.withProgress({ location: vscode.ProgressLocation.Notification }, (progress) => {
+            progress.report({ message: `Catkin Helpers: Parsing test results for package ${this.watched_package}.`, increment: 0 });
+            const n_files = most_recent_test_results.length;
+            const increment = Math.floor(100. / n_files);
+            return new Promise<void>((resolve) => {
+                most_recent_test_results.forEach(file => {
+                    progress.report({ message: "Catkin Helper: Reading " + path.basename(file), increment: increment });
+                    const content = fs.readFileSync(file);
+                    const result = JSON.parse(convert.xml2json(content.toString(), { compact: true }));
+                    // traverse all testsuites items and add there test-cases to the controller's item collection (this is required for GUI interaction)
+                    test_utils.handleJSONArray(result.testsuites.testsuite, test_utils.addTestSuiteItem, this.controller, run);
+                });
+                run.end();
+                // focus test explorer
+                if (focus_test_explorer) {
+                    vscode.commands.executeCommand('test-explorer.focus');
+                }
+                resolve();
+            });
         });
-        run.end();
-        // focus test explorer
-        if (focus_test_explorer) {
-            vscode.commands.executeCommand('test-explorer.focus');
-        }
+
     }
 
     runTestsOfCurrentPackage() {
