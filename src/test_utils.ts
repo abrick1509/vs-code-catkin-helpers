@@ -6,7 +6,7 @@ import * as path from 'path';
 import * as utils from './utils';
 
 
-export function getTestResultXmlsForPackage() {
+export function getTestResultXMLsForPackage() {
     const package_name = utils.getPackageFromFilename();
     const build_space = utils.getBuildSpace();
     const test_results_dir = path.join(build_space, package_name, "test_results", package_name);

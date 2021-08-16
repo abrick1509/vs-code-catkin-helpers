@@ -85,35 +85,3 @@ export async function runTestUnderCursor() {
         vscode.window.showWarningMessage("Current file: " + basename + " does NOT contain any tests. Nothing to do here.");
     }
 };
-
-
-let controller = vscode.tests.createTestController("first_controller", "My test results");
-export async function loadTestResults() {
-    let most_recent_test_results = [];
-    try {
-        most_recent_test_results = test_utils.getTestResultXmlsForPackage();
-    }
-    catch (err) {
-        console.error("err: " + err);
-        vscode.window.showErrorMessage("Catkin Helpers: Couldn't read test results. Did you run your tests before?");
-        return;
-    }
-
-    const run = controller.createTestRun(new vscode.TestRunRequest(), "TestRunner", false);
-    controller.items.replace([]);
-    most_recent_test_results.forEach(file => {
-        const content = fs.readFileSync(file);
-        const result = JSON.parse(convert.xml2json(content.toString(), { compact: true }));
-        // traverse all testsuites items and add there test-cases to the controller's item collection (this is required for GUI interaction)
-        test_utils.handleJSONArray(result.testsuites.testsuite, test_utils.addTestSuiteItem, controller, run);
-    });
-    run.end();
-    // focus test explorer
-    vscode.commands.executeCommand('test-explorer.focus');
-}
-
-
-
-
-
-

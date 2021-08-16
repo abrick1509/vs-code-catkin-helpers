@@ -4,9 +4,13 @@ import * as vscode from 'vscode';
 import * as commands from './commands';
 import * as utils from './utils';
 import * as workspacehandler from './workspacehandler';
+import * as testhandler from './testResultsHandler';
 
 // load all packages in workspace
 const workspaceHandler = new workspacehandler.WorkspaceHandler();
+
+// handle test results 
+const testHandler = new testhandler.TestCaseHandler();
 
 export async function activate(context: vscode.ExtensionContext) {
 	utils.log('Catkin helpers extension activated.');
@@ -34,7 +38,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.update_caches', () => { return workspaceHandler.updateCaches(); }));
 
-	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.load_test_results', commands.loadTestResults));
+	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.load_test_results', () => { return testHandler.update(); }));
 };
 
 export function deactivate() { }
