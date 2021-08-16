@@ -2,17 +2,17 @@
 import * as vscode from 'vscode';
 
 import * as commands from './commands';
-import { log } from './utils';
+import * as utils from './utils';
 import * as workspacehandler from './workspacehandler';
 
 // load all packages in workspace
 const workspaceHandler = new workspacehandler.WorkspaceHandler();
 
 export async function activate(context: vscode.ExtensionContext) {
-	log('Catkin helpers extension activated.');
+	utils.log('Catkin helpers extension activated.');
 
 	if (!workspaceHandler.isCatkinWorkspace()) {
-		log("Not in catkin workspace. Not registering any functions");
+		utils.log("Not in catkin workspace. Not registering any functions");
 		return;
 	}
 
@@ -33,6 +33,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.make_package_from_list', () => { return workspaceHandler.makePackageFromList(); }));
 
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.update_caches', () => { return workspaceHandler.updateCaches(); }));
-}
+
+	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.load_test_results', commands.loadTestResults));
+};
 
 export function deactivate() { }

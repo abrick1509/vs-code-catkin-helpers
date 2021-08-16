@@ -44,6 +44,11 @@
 				"enablement": "editorLangId == cpp"
 			},
 			{
+				"command": "catkin-helpers.load_test_results",
+				"title": "Catkin Helpers (Test): Load test result of current package",
+				"enablement": "editorLangId == cpp"
+			},
+			{
 				"command": "catkin-helpers.catkin_build_package_from_list",
 				"title": "Catkin Helpers (List): Select package to catkin-build",
 				"enablement": "editorLangId == cpp"
@@ -128,6 +133,7 @@
 		"vscode-test": "^1.5.2"
 	},
 	"dependencies": {
-		"vsce": "^1.96.1"
+		"vsce": "^1.96.1",
+		"xml-js": "^1.6.11"
 	}
 }
