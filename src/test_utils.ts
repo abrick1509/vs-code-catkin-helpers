@@ -5,11 +5,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as utils from './utils';
 
-
-export function getTestResultXMLsForPackage() {
-    const package_name = utils.getPackageFromFilename();
+export function getTestResultsDir(package_name: string): string {
     const build_space = utils.getBuildSpace();
-    const test_results_dir = path.join(build_space, package_name, "test_results", package_name);
+    return path.join(build_space, package_name, "test_results", package_name);
+}
+
+
+export function getTestResultXMLsForPackage(package_name: string) {
+    const test_results_dir = getTestResultsDir(package_name);
     const files = fs.readdirSync(test_results_dir);
     let most_recent_test_results = [];
     files.forEach(file => {
@@ -52,7 +55,12 @@ function addTestCaseItem(test_case, test_suite_item: vscode.TestItem, controller
     const test_case_item = controller.createTestItem(test_case._attributes.name, test_case._attributes.name);
     test_suite_item.children.add(test_case_item);
     if (test_case._attributes.result === "completed") {
-        test_run.passed(test_case_item, test_case._attributes.time);
+        if (test_case.hasOwnProperty('failure')) {
+            test_run.failed(test_case_item, new vscode.TestMessage("Failed"), test_case._attributes.time);
+        }
+        else {
+            test_run.passed(test_case_item, test_case._attributes.time);
+        }
     }
     else {
         test_run.failed(test_case_item, new vscode.TestMessage("Failed"), test_case._attributes.time);

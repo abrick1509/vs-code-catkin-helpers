@@ -26,11 +26,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.make_tests', commands.makeTestsCurrentPackage));
 
-	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.run_tests', commands.runTestsCurrentPackage));
-
-	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.run_tests_in_file', commands.runTestsInFile));
-
-	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.run_test_under_cursor', commands.runTestUnderCursor));
+	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.run_tests', () => { return testHandler.runTestsOfCurrentPackage(); }));
 
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.catkin_build_package_from_list', () => { return workspaceHandler.catkinBuildPackageFromList(); }));
 
@@ -39,6 +35,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.update_caches', () => { return workspaceHandler.updateCaches(); }));
 
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.load_test_results', () => { return testHandler.update(); }));
+
+	// context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.run_test_under_cursor', commands.runTestUnderCursor));
+
+	// context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.run_tests_in_file', commands.runTestsInFile));
 };
 
 export function deactivate() { }

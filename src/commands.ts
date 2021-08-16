@@ -26,13 +26,6 @@ export function makeTestsCurrentPackage() {
     utils.runCommand(command);
 };
 
-export function runTestsCurrentPackage() {
-    const packagename = utils.getPackageFromFilename();
-    const shelltype = shell_commands.getShellType();
-    const command = "source $(catkin locate -d)/setup." + shelltype + " && make test -C $(catkin locate -b " + packagename + ")";
-    utils.runCommand(command);
-};
-
 export async function runTestsInFile() {
     const basename = utils.getBasenameFromFilename();
     const shelltype = shell_commands.getShellType();

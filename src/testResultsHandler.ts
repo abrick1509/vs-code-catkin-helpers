@@ -5,25 +5,48 @@ import * as fs from 'fs';
 import * as utils from './utils';
 import * as test_utils from './test_utils';
 import * as convert from 'xml-js';
+import * as shell_commands from './shell_commands';
+import path = require('path');
 
 export class TestCaseHandler {
-    private current_package: string = "";
+    private watched_package: string = "";
+    private results_dir: string = "";
     private controller: vscode.TestController = vscode.tests.createTestController("first_controller", "My test results");
 
+    private results_dir_watcher: vscode.FileSystemWatcher;
+
     constructor() {
+        this.watched_package = utils.getPackageFromFilename();
+        this.results_dir = test_utils.getTestResultsDir(this.watched_package);
         this.update(false);
+        this.updateWatchedPackage(this.watched_package);
+    }
+
+
+
+    updateWatchedPackage(package_to_watch: string): void {
+        this.watched_package = package_to_watch;
+        console.log("package_to_watch: " + package_to_watch);
+        this.results_dir = test_utils.getTestResultsDir(this.watched_package);
+        if (this.results_dir_watcher !== undefined) {
+            this.results_dir_watcher.dispose();
+        }
+        this.results_dir_watcher = vscode.workspace.createFileSystemWatcher(path.join(this.results_dir, "*.xml").toString());
+        this.results_dir_watcher.onDidCreate(() => {
+            console.log("noticed creation of new file: ");
+            this.update();
+        });
+
     }
 
     update(focus_test_explorer = true) {
         this.controller.items.replace([]);
         let most_recent_test_results = [];
         try {
-            this.current_package = utils.getPackageFromFilename();
-            most_recent_test_results = test_utils.getTestResultXMLsForPackage();
+            most_recent_test_results = test_utils.getTestResultXMLsForPackage(this.watched_package);
         }
         catch (err) {
-            console.error("err: " + err);
-            vscode.window.showWarningMessage("Catkin Helpers: Couldn't read test results. Did you run your tests before?");
+            vscode.window.showWarningMessage(`Catkin Helpers: Couldn't read test results for ${this.watched_package}. Did you run your tests before?`);
             return;
         }
 
@@ -39,6 +62,14 @@ export class TestCaseHandler {
         if (focus_test_explorer) {
             vscode.commands.executeCommand('test-explorer.focus');
         }
+    }
+
+    runTestsOfCurrentPackage() {
+        const packagename = utils.getPackageFromFilename();
+        this.updateWatchedPackage(packagename);
+        const shelltype = shell_commands.getShellType();
+        const command = "source $(catkin locate -d)/setup." + shelltype + " && make test -C $(catkin locate -b " + packagename + ")";
+        utils.runCommand(command);
     }
 }
 
