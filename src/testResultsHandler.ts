@@ -10,7 +10,7 @@ import * as shell_commands from './shell_commands';
 export class TestCaseHandler {
     private controller: vscode.TestController = vscode.tests.createTestController("first_controller", "My test results");
 
-    update(focus_test_explorer = true) {
+    updateResults(focus_test_explorer = true) {
         const packagename = utils.getPackageFromFilename();
         this.controller.items.replace([]);
         let most_recent_test_results = [];
@@ -18,11 +18,11 @@ export class TestCaseHandler {
             most_recent_test_results = test_utils.getTestResultXMLsForPackage(packagename);
         }
         catch (err) {
-            vscode.window.showWarningMessage(`Catkin Helpers: Couldn't read test results for ${packagename}. Did you run your tests before?`);
+            vscode.window.showWarningMessage(`Catkin Helpers: Couldn't read test results for ${packagename}. Did you runner your tests before?`);
             return;
         }
+        let run = this.controller.createTestRun(new vscode.TestRunRequest(), "TestRunner");
 
-        let run = this.controller.createTestRun(new vscode.TestRunRequest(), "TestRunner", false);
         vscode.window.withProgress({ location: vscode.ProgressLocation.Notification }, (progress) => {
             progress.report({ message: `Catkin Helpers: Parsing test results for package ${packagename}.`, increment: 0 });
             const n_files = most_recent_test_results.length;
@@ -43,7 +43,25 @@ export class TestCaseHandler {
                 resolve();
             });
         });
+    }
 
+    runTests() {
+        this.controller.createRunProfile('Run', vscode.TestRunProfileKind.Run, (request, token) => {
+            console.log("this is a test: ");
+            utils.log("request: ", request);
+            const run = this.controller.createTestRun(request);
+            this.controller.items.forEach(item => {
+                console.log("item.label: " + item.label);
+                run.failed(item, new vscode.TestMessage("This is just a test"), 0.0);
+            });
+            console.log("done: ");
+            run.end();
+        });
+    }
+
+    collectTestsOfPackage(){
+        const packagename = utils.getPackageFromFilename();
+        
     }
 
     runTestsOfCurrentPackage() {
