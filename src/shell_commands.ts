@@ -57,6 +57,5 @@ export function runShellCommandSync(cwd: string, command: string, args?: string[
 export function getShellType(): string {
     const command = "shell_path=$0; echo ${shell_path##*/}";
     const result = runShellCommandSync(vscode.workspace.workspaceFolders[0].uri.fsPath, command);
-    log("result: ", result);
     return result.stdout.trim();
 }

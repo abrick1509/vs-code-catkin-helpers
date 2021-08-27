@@ -7,7 +7,7 @@ Provides some simple helper functions to work with catkin projects. It basically
 1.2 Call `make install` in the build folder of the opened file's package (w/o dependencies).  
 1.3 Call `make tests` for the opened file's package (w/o dependencies).  
 1.4 Run all tests for the opened file's package.  
-1.5 Visualize test results of latest test run in Test Explorer for the opened file's package.  
+1.5 Discover all test cases of opened file's package for the Test Explorer (this also allows to run and evaluate test cases in the Test Explorer).
 
 ### Related to opened catkin workspace:
 2.1 Pick package from list for a `catkin build` (see 1.1 above).  
@@ -19,13 +19,10 @@ Provides some simple helper functions to work with catkin projects. It basically
 | `Catkin Helpers (Current File): Make current package`                | See 1.2. from above | `ctrl+b`      |
 | `Catkin Helpers (Test): Make tests of current package`               | See 1.3. from above | `undefined`   |
 | `Catkin Helpers (Test): Run tests of current package`                | See 1.4. from above | `undefined`   |
-| `Catkin Helpers (Test): Show latest test results of current package` | See 1.5. from above | `undefined`   |
+| `Catkin Helpers (Test): Discover tests of current package`           | See 1.5. from above | `undefined`   |
 | `Catkin Helpers (List): Select package to catkin-build`              | See 2.1. from above | `undefined`   |
 | `Catkin Helpers (List): Select package to make`                      | See 2.2. from above | `ctrl+m`      |
  
-## Test Execution
-Since our current project setup relies on various environmental variables/sourced files for test execution, this extension intentionally doesn't register itself as a Test Adapter for the general Test Explorer extension. It seemed easier and more appropriate to just execute the tests in the integrated terminal (since this is already fully setup and properly sourced). Also, this allows for straight forward error handling.  
-This might need to be changed in future versions.
 
 ## Known Issues 
 Nothing known so far.  

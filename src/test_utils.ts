@@ -19,7 +19,7 @@ export function getTestResultXMLsForPackage(package_name: string) {
         // get all result files for same test (they are increment by a trailing number in the filename)
         const filename_wo_number = file.replace(/_\d+/, "").replace(/\.xml/, "");
         const files_same_test = files.filter(val => {
-            return val.includes(filename_wo_number);
+            return val.replace(/_\d+/, "").replace(/\.xml/, "") === filename_wo_number;
         });
         // iterate over those files and get the most recent one (wrt. modification time)
         let last_modified_time = 0.;

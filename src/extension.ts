@@ -28,8 +28,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.run_tests', () => { return testHandler.runTestsOfCurrentPackage(); }));
 
-	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.show_test_results', () => { return testHandler.updateResults(); }));
-	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.run_test_via_test_explorer', () => { return testHandler.runTests(); }));
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.discover_tests', () => { return testHandler.discoverTests(); }));
 
 	context.subscriptions.push(vscode.commands.registerCommand('catkin-helpers.catkin_build_package_from_list', () => { return workspaceHandler.catkinBuildPackageFromList(); }));

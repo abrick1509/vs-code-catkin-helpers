@@ -34,18 +34,8 @@
 				"enablement": "editorLangId == cpp"
 			},
 			{
-				"command": "catkin-helpers.show_test_results",
-				"title": "Catkin Helpers (Test): Show latest test results of current package",
-				"enablement": "editorLangId == cpp"
-			},
-			{
 				"command": "catkin-helpers.discover_tests",
-				"title": "Catkin Helpers (Test): Discover Tests of current package",
-				"enablement": "editorLangId == cpp"
-			},
-			{
-				"command": "catkin-helpers.run_test_via_test_explorer",
-				"title": "Catkin Helpers (Test): Run tests via Test Explorer",
+				"title": "Catkin Helpers (Test): Discover tests of current package",
 				"enablement": "editorLangId == cpp"
 			},
 			{
@@ -82,11 +72,6 @@
 			},
 			{
 				"command": "catkin-helpers.run_tests",
-				"key": "",
-				"when": "editorTextFocus"
-			},
-			{
-				"command": "catkin-helpers.show_test_results",
 				"key": "",
 				"when": "editorTextFocus"
 			},
