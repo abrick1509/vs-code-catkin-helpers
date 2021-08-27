@@ -39,6 +39,11 @@
 				"enablement": "editorLangId == cpp"
 			},
 			{
+				"command": "catkin-helpers.discover_tests",
+				"title": "Catkin Helpers (Test): Discover Tests of current package",
+				"enablement": "editorLangId == cpp"
+			},
+			{
 				"command": "catkin-helpers.run_test_via_test_explorer",
 				"title": "Catkin Helpers (Test): Run tests via Test Explorer",
 				"enablement": "editorLangId == cpp"
