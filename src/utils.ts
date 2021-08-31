@@ -32,7 +32,7 @@ function getPackageNameFromPackageXml(package_xml_path: string) {
 
 function getPackageXmlFromFilename() {
     const filename = getFilename();
-    const command = 'dir=$(dirname ' + filename + '); while [[ ! -f "${dir}/package.xml" ]] && [[ "${dir}" != "/" ]]; do dir=$(dirname $dir); done; echo $dir';
+    const command = 'dir=$(dirname ' + filename + '); while [ ! -f "${dir}/package.xml" ] && [ "${dir}" != "/" ]; do dir=$(dirname $dir); done; echo $dir';
     const package_dir = shell_commands.runShellCommandSync(vscode.workspace.workspaceFolders[0].uri.fsPath, command);
     return path.join(package_dir.stdout.trim(), "/package.xml");
 }
