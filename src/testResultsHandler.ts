@@ -7,7 +7,6 @@ import * as convert from 'xml-js';
 import * as utils from './utils';
 import * as test_utils from './test_utils';
 import * as shell_commands from './shell_commands';
-import { Z_NO_FLUSH } from 'zlib';
 
 export class TestCaseHandler {
     private controller: vscode.TestController = vscode.tests.createTestController("first_controller", "My test results");
@@ -42,7 +41,7 @@ export class TestCaseHandler {
             const ctest_file = path.join(utils.getBuildSpace(), this.packagename, "CTestTestfile.cmake");
             const content = fs.readFileSync(ctest_file).toString().split('\n');
             content.forEach(line => {
-                const res = line.match(/add_test\((\w*) "([\w\/]*)/);
+                const res = line.match(/add_test\((\w*) "([\w\/-]*)/);
                 if (res !== null) {
                     const test_executable_path = res[2];
                     this.test_executables.push(test_executable_path);

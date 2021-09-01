@@ -13,7 +13,7 @@ class ShellCommandOutput {
 
 export function runShellCommand(cwd: string, command: string, args?: string[]): Promise<ShellCommandOutput> {
     return new Promise<ShellCommandOutput>((resolve, reject) => {
-        let options: child_process.ExecOptions = { cwd: cwd };
+        let options: child_process.ExecOptions = { cwd: cwd, shell: getShellType() };
         let command_and_args = command
         if (args) {
             command_and_args += args.join(" ");
@@ -39,7 +39,7 @@ export function runShellCommandSync(cwd: string, command: string, args?: string[
     let result = new ShellCommandOutput();
     result.command = command;
     try {
-        let options: child_process.ExecOptions = { cwd: cwd };
+        let options: child_process.ExecOptions = { cwd: cwd, shell: getShellType() };
         let command_and_args = command;
         if (args) {
             command_and_args += args.join(" ");
@@ -55,7 +55,6 @@ export function runShellCommandSync(cwd: string, command: string, args?: string[
 }
 
 export function getShellType(): string {
-    const command = "shell_path=$0; echo ${shell_path##*/}";
-    const result = runShellCommandSync(vscode.workspace.workspaceFolders[0].uri.fsPath, command);
-    return result.stdout.trim();
+    const shelltype = vscode.workspace.getConfiguration('catkin-helpers').get('shelltype') as string;
+    return shelltype;
 }

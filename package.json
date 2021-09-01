@@ -85,7 +85,22 @@
 				"key": "ctrl+m",
 				"when": "editorTextFocus"
 			}
-		]
+		],
+		"configuration": {
+			"title": "Catkin Helpers",
+			"properties": {
+				"catkin-helpers.shelltype": {
+					"type": "string",
+					"default": "bash",
+					"enum": [
+						"bash",
+						"zsh",
+						"sh"
+					],
+					"description": "Shell type of the integrated terminal (only the ones supported by catkin)."
+				}
+			}
+		}
 	},
 	"repository": "https://github.com/abrick1509/vs-code-catkin-helpers.git",
 	"bugs": {
