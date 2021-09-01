@@ -4,6 +4,8 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as utils from './utils';
 import * as shell_commands from './shell_commands';
+import * as convert from 'xml-js';
+import * as test_utils from './test_utils';
 
 export function catkinBuildCurrentPackage() {
     const packagename = utils.getPackageFromFilename();
