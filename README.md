@@ -13,15 +13,19 @@ Provides some simple helper functions to work with catkin projects. It basically
 2.1 Pick package from list for a `catkin build` (see 1.1 above).  
 2.2 Pick package from list for a `make install` (see 1.2 above).  
 ## Commands/Keybindings
-| Name                                                                 | Description         | Default Value |
-| -------------------------------------------------------------------- | ------------------- | ------------- |
-| `Catkin Helpers (Current File): catkin-build current package`        | See 1.1 from above  | `undefined`   |
-| `Catkin Helpers (Current File): Make current package`                | See 1.2. from above | `ctrl+b`      |
-| `Catkin Helpers (Test): Make tests of current package`               | See 1.3. from above | `undefined`   |
-| `Catkin Helpers (Test): Run tests of current package`                | See 1.4. from above | `undefined`   |
-| `Catkin Helpers (Test): Discover tests of current package`           | See 1.5. from above | `undefined`   |
-| `Catkin Helpers (List): Select package to catkin-build`              | See 2.1. from above | `undefined`   |
-| `Catkin Helpers (List): Select package to make`                      | See 2.2. from above | `ctrl+m`      |
+| Name                                                          | Description         | Default Value |
+| ------------------------------------------------------------- | ------------------- | ------------- |
+| `Catkin Helpers (Current File): catkin-build current package` | See 1.1 from above  | `undefined`   |
+| `Catkin Helpers (Current File): Make current package`         | See 1.2. from above | `ctrl+b`      |
+| `Catkin Helpers (Test): Make tests of current package`        | See 1.3. from above | `undefined`   |
+| `Catkin Helpers (Test): Run tests of current package`         | See 1.4. from above | `undefined`   |
+| `Catkin Helpers (Test): Discover tests of current package`    | See 1.5. from above | `undefined`   |
+| `Catkin Helpers (List): Select package to catkin-build`       | See 2.1. from above | `undefined`   |
+| `Catkin Helpers (List): Select package to make`               | See 2.2. from above | `ctrl+m`      |
+## Options
+| Name                       | Description                                                                                                                                     | Default Value |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `catkin-helpers.shelltype` | Shell type of the integrated terminal (only the ones supported by catkin). This is required for sourcing the environment before test execution. | `bash`        |
  
 
 ## Known Issues 
